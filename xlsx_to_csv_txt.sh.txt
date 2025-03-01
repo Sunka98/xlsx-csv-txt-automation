@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Define directories
+ExcelSource="File path of Source"
+CsvTarget="Path to Excel/SplitTXT/CSVfiles"
+Processed="Path toExcel/ProcessedFiles"
+TxtTarget="Path to Excel/SplitTXT/TXTfiles"
+
+# Ensure target directories exist
+mkdir -p "$CsvTarget" "$Processed" "$TxtTarget/Files1236" "$TxtTarget/Files1234"
+
+echo "Starting conversion of Excel files to CSV..."
+
+# Convert Excel files to CSV
+for file in "$ExcelSource"/*.xlsx; do
+    if [[ -f "$file" ]]; then
+        filename=$(basename "$file" .xlsx)
+        python exceltocsv.py "$file" "$CsvTarget/$filename.csv"
+        sleep 2
+        mv "$file" "$Processed/"
+        echo "Converted and moved: $filename.xlsx"
+    fi
+done
+
+echo "Splitting CSV files into TXT files..."
+
+# Split CSVs into multiple TXT files
+for csvfile in "$CsvTarget"/*.csv; do
+    if [[ -f "$csvfile" ]]; then
+        filename=$(basename "$csvfile" .csv)
+        awk -F, '{print $1, $2, $3, $6}' "$csvfile" > "$TxtTarget/Files1236/${filename}_1236.txt"
+        awk -F, '{print $1, $2, $3, $4}' "$csvfile" > "$TxtTarget/Files1234/${filename}_1234.txt"
+        echo "Processed: $filename.csv → TXT files"
+    fi
+done
+
+echo "All files processed successfully."
